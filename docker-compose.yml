@@ -1,0 +1,37 @@
+version: "3"
+services:
+
+    php-fpm:
+        build:
+            context: docker/php7.4-fpm
+        volumes:
+            - ./:/var/www
+        working_dir: /var/www/
+        environment:
+            XDEBUG_CONFIG: "client_host=192.168.31.5"
+            PHP_IDE_CONFIG: "serverName=localhost"
+
+    nginx:
+        image: nginx
+        volumes:
+            - ./docker/nginx/:/etc/nginx/conf.d/
+            - ./news_list/public:/var/www/public
+        ports:
+            - "80:80"
+        depends_on:
+            - php-fpm
+
+    mysql:
+        image: mysql:5.7
+        volumes:
+            - ./docker/mysql:/var/lib/mysql:z
+            - ./docker/mysqld.cnf:/etc/mysql/mysql.conf.d/mysqld.cnf
+        environment:
+            - MYSQL_DATABASE=dev
+            - MYSQL_USER=dev
+            - MYSQL_PASSWORD=devpass
+            - MYSQL_ROOT_PASSWORD=root
+            - TZ=Europe/Moscow
+        command: mysqld --sql_mode="" --innodb_flush_log_at_trx_commit=2 --innodb_flush_method="O_DIRECT" --transaction-isolation="READ-COMMITTED" --key_buffer_size="32M" --query_cache_size="32M" --query_cache_limit="16M" --tmp_table_size="64M" --max_heap_table_size="64M" --innodb_buffer_pool_size="256M"
+        ports:
+            - 3307:3306
