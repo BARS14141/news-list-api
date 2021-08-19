@@ -15,7 +15,7 @@ services:
         image: nginx
         volumes:
             - ./docker/nginx/:/etc/nginx/conf.d/
-            - ./news_list/public:/var/www/public
+            - ./public:/var/www/public
         ports:
             - "80:80"
         depends_on:
