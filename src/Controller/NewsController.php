@@ -3,11 +3,14 @@
 namespace App\Controller;
 
 use App\Entity\News;
+use App\Rabbit\NewsProducer;
+use App\Rabbit\Producer\Producer;
 use App\Repository\NewsRepository;
 use DateTime;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\EntityRepository;
+use OldSound\RabbitMqBundle\RabbitMq\ProducerInterface;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\ParamConverter;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -22,26 +25,22 @@ class NewsController extends AbstractController
      * @param EntityManagerInterface $entityManager
      * @return Response
      */
-    public function add(Request $request, EntityManagerInterface $entityManager): Response
+    public function add(Request $request, EntityManagerInterface $entityManager, ProducerInterface $addNewsProducer): Response
     {
         try{
             $data = $this->getRequestContent($request);
             if (!$data || !$data['header'] || !$data['text'] || !$data['author']){
                 throw new \Exception();
             }
-
-            $news = new News();
-            $news->setHeader($data['header']);
-            $news->setText($data['text']);
-            $news->setAuthor($data['author']);
+            $news = [];
+            $news['header'] = $data['header'];
+            $news['text'] = $data['text'];
+            $news['author'] = $data['author'];
             if (isset($data['publish_date']) && ($datetime = new DateTime($data['publish_date']))) {
-                $news->setPublishDate($datetime);
+                $news['publish_date'] = $data['publish_date'];
             }
-            $entityManager->persist($news);
-            $entityManager->flush();
-
+            $addNewsProducer->publish(json_encode($news));
             return $this->json(['success' => "News added successfully"]);
-
         }catch (\Exception $e){
             return $this->json(['errors' => "Data no valid"], 422);
         }

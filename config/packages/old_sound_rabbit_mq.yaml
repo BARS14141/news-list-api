@@ -1,0 +1,17 @@
+old_sound_rabbit_mq:
+    connections:
+        default:
+            url: '%env(RABBITMQ_URL)%'
+            read_write_timeout: 4
+            heartbeat: 2
+    producers:
+        add_news:
+            connection:       default
+            exchange_options: { name: 'notification.v1.send_email', type: direct }
+
+    consumers:
+        add_news:
+            connection:       default
+            exchange_options: { name: 'notification.v1.send_email', type: direct }
+            queue_options:    { name: 'notification.v1.send_email' }
+            callback:         app.consumer.add_news

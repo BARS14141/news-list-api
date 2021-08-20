@@ -10,6 +10,8 @@ services:
         environment:
             XDEBUG_CONFIG: "client_host=192.168.31.5"
             PHP_IDE_CONFIG: "serverName=localhost"
+        depends_on:
+            -   rabbitmq
 
     nginx:
         image: nginx
@@ -35,3 +37,9 @@ services:
         command: mysqld --sql_mode="" --innodb_flush_log_at_trx_commit=2 --innodb_flush_method="O_DIRECT" --transaction-isolation="READ-COMMITTED" --key_buffer_size="32M" --query_cache_size="32M" --query_cache_limit="16M" --tmp_table_size="64M" --max_heap_table_size="64M" --innodb_buffer_pool_size="256M"
         ports:
             - 3307:3306
+
+    rabbitmq:
+        image: rabbitmq:3-management
+        ports:
+            - 5672:5672
+            - 15672:15672

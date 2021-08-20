@@ -23,3 +23,8 @@ services:
 
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones
+
+    app.consumer.add_news:
+        class: App\Rabbit\NewsAddConsumer
+
+    App\Rabbit\NewsProducer: '@old_sound_rabbit_mq.add_news_producer'
